@@ -11,10 +11,47 @@ class SearchForm(forms.Form):
             ("Train", "Train"),
             ("Bus", "Bus"),
         ),
+        widget=forms.Select(attrs={
+            "class": "form-select",
+            "aria-label": "Travel type",
+        }),
+        label="Type",
     )
-    source = forms.CharField(required=False)
-    destination = forms.CharField(required=False)
-    date = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
+    source = forms.CharField(
+        required=False,
+        label="From",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Departure city/airport/station",
+                "aria-label": "From",
+                "autocomplete": "off",
+            }
+        ),
+    )
+    destination = forms.CharField(
+        required=False,
+        label="To",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Destination city/airport/station",
+                "aria-label": "To",
+                "autocomplete": "off",
+            }
+        ),
+    )
+    date = forms.DateField(
+        required=False,
+        label="Date",
+        widget=forms.DateInput(
+            attrs={
+                "type": "date",
+                "class": "form-control",
+                "aria-label": "Date",
+            }
+        ),
+    )
 
 
 class BookingForm(forms.ModelForm):

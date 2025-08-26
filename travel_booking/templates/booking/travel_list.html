@@ -2,12 +2,26 @@
 {% block title %}Travel Options{% endblock %}
 {% block content %}
 <h2>Find Travel Options</h2>
-<form method="get" class="row g-2 mb-4">
-  <div class="col-md-2">{{ form.type }}</div>
-  <div class="col-md-3">{{ form.source }}</div>
-  <div class="col-md-3">{{ form.destination }}</div>
-  <div class="col-md-2">{{ form.date }}</div>
-  <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Search</button></div>
+<form method="get" class="row g-3 align-items-end mb-4">
+  <div class="col-md-2">
+    <label class="form-label" for="id_type">{{ form.type.label }}</label>
+    {{ form.type }}
+  </div>
+  <div class="col-md-3">
+    <label class="form-label" for="id_source">{{ form.source.label }}</label>
+    {{ form.source }}
+  </div>
+  <div class="col-md-3">
+    <label class="form-label" for="id_destination">{{ form.destination.label }}</label>
+    {{ form.destination }}
+  </div>
+  <div class="col-md-2">
+    <label class="form-label" for="id_date">{{ form.date.label }}</label>
+    {{ form.date }}
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100" type="submit">Search</button>
+  </div>
 </form>
 
 <div class="table-responsive">

@@ -5,12 +5,45 @@ from .models import Profile
 
 
 class RegistrationForm(UserCreationForm):
-    email = forms.EmailField(required=True)
-    phone = forms.CharField(required=False)
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            "class": "form-control",
+            "placeholder": "name@example.com",
+        }),
+        label="Email",
+    )
+    phone = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "Phone number",
+            "autocomplete": "tel",
+        }),
+        label="Phone",
+    )
 
     class Meta:
         model = User
         fields = ("username", "email", "phone", "password1", "password2")
+        widgets = {
+            "username": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Username",
+                "autocapitalize": "off",
+                "autocomplete": "username",
+            }),
+            "password1": forms.PasswordInput(attrs={
+                "class": "form-control",
+                "placeholder": "Password",
+                "autocomplete": "new-password",
+            }),
+            "password2": forms.PasswordInput(attrs={
+                "class": "form-control",
+                "placeholder": "Confirm password",
+                "autocomplete": "new-password",
+            }),
+        }
 
     def clean_email(self):
         email = self.cleaned_data.get("email", "").strip()
@@ -32,9 +65,32 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ("phone",)
+        widgets = {
+            "phone": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Phone number",
+                "autocomplete": "tel",
+            })
+        }
 
 
 class LoginForm(AuthenticationForm):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].widget.attrs.update(
+            {
+                "class": "form-control",
+                "placeholder": "Username",
+                "autocapitalize": "off",
+                "autocomplete": "username",
+            }
+        )
+        self.fields["password"].widget.attrs.update(
+            {
+                "class": "form-control",
+                "placeholder": "Password",
+                "autocomplete": "current-password",
+            }
+        )
 
 

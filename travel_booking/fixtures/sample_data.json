@@ -1,0 +1,49 @@
+[
+  {
+    "model": "booking.traveloption",
+    "pk": 1,
+    "fields": {
+      "type": "Flight",
+      "source": "New York",
+      "destination": "Los Angeles",
+      "departure_date": "2025-12-20",
+      "departure_time": "10:30:00",
+      "price": "299.99",
+      "available_seats": 50,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "booking.traveloption",
+    "pk": 2,
+    "fields": {
+      "type": "Train",
+      "source": "Boston",
+      "destination": "Washington",
+      "departure_date": "2025-12-22",
+      "departure_time": "09:00:00",
+      "price": "89.50",
+      "available_seats": 120,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "booking.traveloption",
+    "pk": 3,
+    "fields": {
+      "type": "Bus",
+      "source": "San Francisco",
+      "destination": "Las Vegas",
+      "departure_date": "2025-12-25",
+      "departure_time": "08:00:00",
+      "price": "49.99",
+      "available_seats": 40,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  }
+]
+
+

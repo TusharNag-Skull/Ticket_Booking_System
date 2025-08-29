@@ -1,15 +1,33 @@
 {% extends 'base.html' %}
 {% block title %}Book{% endblock %}
 {% block content %}
-<h2>Book {{ travel_option.type }}: {{ travel_option.source }} → {{ travel_option.destination }}</h2>
-<p>Date: {{ travel_option.departure_date }} Time: {{ travel_option.departure_time }}</p>
-<p>Price per seat: ${{ travel_option.price }} | Available: {{ travel_option.available_seats }}</p>
-<form method="post" class="mt-3">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button class="btn btn-success" type="submit">Confirm Booking</button>
-  <a class="btn btn-secondary" href="{% url 'booking:travel_list' %}">Cancel</a>
-  </form>
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow-soft mb-4">
+      <div class="card-body p-4">
+        <h2 class="mb-1">Book {{ travel_option.type }}: {{ travel_option.source }} → {{ travel_option.destination }}</h2>
+        <p class="text-muted mb-3">{{ travel_option.departure_date }} at {{ travel_option.departure_time }}</p>
+        <div class="d-flex gap-3 mb-3">
+          <span class="badge text-bg-primary">${{ travel_option.price }} per seat</span>
+          <span class="badge text-bg-success">Available: {{ travel_option.available_seats }}</span>
+        </div>
+        <form method="post" class="row g-3" id="bookingForm">
+          {% csrf_token %}
+          <div class="col-md-4">
+            <label class="form-label" for="id_number_of_seats">Seats</label>
+            {{ form.number_of_seats }}
+          </div>
+          {{ form.passenger_payload }}
+          <div class="col-12" id="passengerFields"></div>
+          <div class="col-12">
+            <button class="btn btn-success me-2" type="submit"><i class="bi bi-check2-circle me-1"></i>Confirm Booking</button>
+            <a class="btn btn-secondary" href="{% url 'booking:travel_list' %}">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 

@@ -100,3 +100,6 @@ Visit http://127.0.0.1:8000/
 - Bootstrap 5 responsive UI
 - Admin panels for managing data
 
+
+
+

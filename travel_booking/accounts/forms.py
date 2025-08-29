@@ -60,6 +60,23 @@ class RegistrationForm(UserCreationForm):
             Profile.objects.filter(user=user).update(phone=phone)
         return user
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Ensure all fields have consistent form-control styling
+        self.fields["username"].widget.attrs.setdefault("class", "form-control")
+        self.fields["username"].widget.attrs.setdefault("placeholder", "Username")
+        self.fields["email"].widget.attrs.setdefault("class", "form-control")
+        self.fields["email"].widget.attrs.setdefault("placeholder", "name@example.com")
+        # Optional phone is on Profile model; ensure uniform look
+        if "phone" in self.fields:
+            self.fields["phone"].widget.attrs.setdefault("class", "form-control")
+            self.fields["phone"].widget.attrs.setdefault("placeholder", "Phone number")
+        # UserCreationForm may ignore Meta widgets depending on version - enforce here
+        self.fields["password1"].widget.attrs.setdefault("class", "form-control")
+        self.fields["password1"].widget.attrs.setdefault("placeholder", "Password")
+        self.fields["password2"].widget.attrs.setdefault("class", "form-control")
+        self.fields["password2"].widget.attrs.setdefault("placeholder", "Confirm password")
+
 
 class ProfileForm(forms.ModelForm):
     class Meta:

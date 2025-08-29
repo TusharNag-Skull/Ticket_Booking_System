@@ -1,36 +1,62 @@
 {% extends 'base.html' %}
 {% block title %}Register{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-7 col-lg-6">
-    <div class="card shadow-sm">
-      <div class="card-body p-4">
-        <h2 class="mb-3">Register</h2>
-        <form method="post" novalidate>
-          {% csrf_token %}
-          <div class="mb-3">
+<div class="auth-container">
+  <div class="card shadow-soft auth-card">
+    <div class="card-body">
+      <h2 class="mb-2 fw-bold auth-title">Create your account</h2>
+      <p class="auth-subtitle mb-4">Join GoTicketly to book and manage your trips.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger" role="alert">
+            {{ form.non_field_errors|join:', ' }}
+          </div>
+        {% endif %}
+        <div class="row g-3">
+          <div class="col-md-6">
             <label for="id_username" class="form-label">Username</label>
             {{ form.username }}
+            {% if form.username.errors %}
+              <div class="invalid-feedback d-block">{{ form.username.errors|join:', ' }}</div>
+            {% endif %}
           </div>
-          <div class="mb-3">
+          <div class="col-md-6">
             <label for="id_email" class="form-label">Email</label>
             {{ form.email }}
+            {% if form.email.errors %}
+              <div class="invalid-feedback d-block">{{ form.email.errors|join:', ' }}</div>
+            {% endif %}
           </div>
-          <div class="mb-3">
+          <div class="col-md-6">
             <label for="id_phone" class="form-label">Phone</label>
             {{ form.phone }}
+            {% if form.phone.errors %}
+              <div class="invalid-feedback d-block">{{ form.phone.errors|join:', ' }}</div>
+            {% endif %}
           </div>
-          <div class="mb-3">
+          <div class="col-md-6"></div>
+          <div class="col-md-6">
             <label for="id_password1" class="form-label">Password</label>
             {{ form.password1 }}
+            {% if form.password1.errors %}
+              <div class="invalid-feedback d-block">{{ form.password1.errors|join:', ' }}</div>
+            {% endif %}
           </div>
-          <div class="mb-3">
-            <label for="id_password2" class="form-label">Password confirmation</label>
+          <div class="col-md-6">
+            <label for="id_password2" class="form-label">Confirm password</label>
             {{ form.password2 }}
-            <div class="form-text">Enter the same password as before, for verification.</div>
+            {% if form.password2.errors %}
+              <div class="invalid-feedback d-block">{{ form.password2.errors|join:', ' }}</div>
+            {% endif %}
           </div>
-          <button class="btn btn-success" type="submit">Create account</button>
-        </form>
+          <div class="col-12 auth-actions">
+            <button class="btn btn-success" type="submit"><i class="bi bi-person-plus-fill me-1"></i>Create account</button>
+          </div>
+        </div>
+      </form>
+      <div class="mt-3 small text-muted">
+        Already have an account? <a href="{% url 'accounts:login' %}">Login</a>
       </div>
     </div>
   </div>

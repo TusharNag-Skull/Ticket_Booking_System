@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Browse{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="mb-0">Browse Options</h2>
+  <div class="btn-group" role="group">
+    <a class="btn btn-outline-primary" href="{% url 'booking:travel_list_by_type' 'Bus' %}">Bus</a>
+    <a class="btn btn-outline-primary" href="{% url 'booking:travel_list_by_type' 'Train' %}">Train</a>
+    <a class="btn btn-outline-primary" href="{% url 'booking:travel_list_by_type' 'Flight' %}">Flight</a>
+  </div>
+</div>
+
+<div class="card shadow-soft mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label" for="id_source">{{ form.source.label }}</label>
+        {{ form.source }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="id_destination">{{ form.destination.label }}</label>
+        {{ form.destination }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="id_date">{{ form.date.label }}</label>
+        {{ form.date }}
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100" type="submit">Filter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row g-4">
+  {% for t in travel_options %}
+  <div class="col-sm-6 col-lg-4">
+    <div class="card offer-card h-100 shadow-soft">
+      <div class="card-body">
+        <h5 class="mb-1">{{ t.source }} → {{ t.destination }}</h5>
+        <div class="text-muted small mb-3">{{ t.type }} • {{ t.departure_date }} {{ t.departure_time }}</div>
+        <div class="d-flex align-items-center justify-content-between">
+          <span class="badge text-bg-success">{{ t.available_seats }} seats</span>
+          <div class="fs-5 fw-bold">${{ t.price }}</div>
+        </div>
+      </div>
+      <div class="card-footer bg-transparent border-0 pt-0 pb-4 px-4">
+        {% if user.is_authenticated and t.available_seats > 0 %}
+          <a class="btn btn-success w-100" href="{% url 'booking:create_booking' t.id %}">Book</a>
+        {% else %}
+          <button class="btn btn-secondary w-100" disabled>Book</button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12"><div class="text-center text-muted">No options found.</div></div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+

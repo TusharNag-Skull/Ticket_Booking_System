@@ -4,6 +4,7 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse
 
 from .forms import SearchForm, BookingForm
 from .models import TravelOption, Booking
@@ -28,8 +29,50 @@ def travel_list(request):
         if date:
             queryset = queryset.filter(departure_date=date)
 
-    context = {"form": form, "travel_options": queryset}
+    # Popular routes: based on today's bookings (or recent 24h)
+    from django.utils import timezone
+    from datetime import timedelta
+    since = timezone.now() - timedelta(days=1)
+    popular_qs = (
+        Booking.objects.filter(booking_date__gte=since)
+        .values("travel_option__source", "travel_option__destination")
+        .order_by()
+    )
+    # Build counts dictionary
+    counts = {}
+    for item in popular_qs:
+        key = (item["travel_option__source"], item["travel_option__destination"])
+        counts[key] = counts.get(key, 0) + 1
+    popular = [
+        {"source": s, "destination": d, "count": c}
+        for (s, d), c in sorted(counts.items(), key=lambda kv: kv[1], reverse=True)[:6]
+    ]
+
+    context = {"form": form, "travel_options": queryset, "popular_routes": popular}
     return render(request, "booking/travel_list.html", context)
+
+
+def travel_list_by_type(request, travel_type: str):
+    # reuse search form but lock the type
+    request_get = request.GET.copy()
+    request_get["type"] = travel_type.capitalize()
+    form = SearchForm(request_get)
+    queryset = (
+        TravelOption.objects.filter(type=travel_type.capitalize())
+        .order_by("departure_date", "departure_time")
+    )
+    if form.is_valid():
+        source = form.cleaned_data.get("source")
+        destination = form.cleaned_data.get("destination")
+        date = form.cleaned_data.get("date")
+        if source:
+            queryset = queryset.filter(source__icontains=source)
+        if destination:
+            queryset = queryset.filter(destination__icontains=destination)
+        if date:
+            queryset = queryset.filter(departure_date=date)
+    context = {"form": form, "travel_options": queryset, "popular_routes": []}
+    return render(request, "booking/travel_list_by_type.html", context)
 
 
 @login_required
@@ -43,6 +86,8 @@ def create_booking(request, travel_id: int):
         form = BookingForm(request.POST)
         if form.is_valid():
             number_of_seats = form.cleaned_data["number_of_seats"]
+            passenger_name = form.cleaned_data["primary_passenger_name"].strip()
+            passenger_age = form.cleaned_data["primary_passenger_age"]
             if number_of_seats <= 0:
                 messages.error(request, "Number of seats must be positive.")
             elif travel_option.available_seats < number_of_seats:
@@ -52,6 +97,9 @@ def create_booking(request, travel_id: int):
                     user=request.user,
                     travel_option=travel_option,
                     number_of_seats=number_of_seats,
+                    primary_passenger_name=passenger_name,
+                    primary_passenger_age=passenger_age,
+                    passenger_details=form.cleaned_data.get("passenger_details", []),
                     total_price=0,
                 )
                 # Atomic seat decrement
@@ -74,7 +122,8 @@ def create_booking(request, travel_id: int):
                         )
                     except Exception:
                         pass
-                messages.success(request, "Booking confirmed!")
+                display_name = (request.user.get_full_name() or request.user.get_username()).strip()
+                messages.success(request, f"Booking confirmed, {display_name}!")
                 return redirect("booking:booking_history")
     else:
         form = BookingForm()
@@ -121,6 +170,37 @@ def cancel_booking(request, booking_id: int):
             )
         except Exception:
             pass
-    messages.success(request, "Booking cancelled and seats restored.")
+    display_name = (request.user.get_full_name() or request.user.get_username()).strip()
+    messages.success(request, f"Booking cancelled and seats restored, {display_name}.")
     return redirect("booking:booking_history")
 
+
+def suggest_locations(request):
+    """Return JSON suggestions for source/destination.
+    Query params: q=term, field=source|destination (optional)
+    """
+    term = (request.GET.get("q") or "").strip()
+    field = (request.GET.get("field") or "").strip().lower()
+    qs = TravelOption.objects.all()
+    if field == "source":
+        values_qs = qs.values_list("source", flat=True)
+    elif field == "destination":
+        values_qs = qs.values_list("destination", flat=True)
+    else:
+        values_qs = qs.values_list("source", flat=True)
+        values_qs = list(values_qs) + list(qs.values_list("destination", flat=True))
+
+    if term:
+        values = [v for v in values_qs if term.lower() in v.lower()]
+    else:
+        values = list(values_qs)
+    # unique, preserve order
+    seen = set()
+    unique_values = []
+    for v in values:
+        if v not in seen:
+            seen.add(v)
+            unique_values.append(v)
+        if len(unique_values) >= 10:
+            break
+    return JsonResponse({"results": unique_values})

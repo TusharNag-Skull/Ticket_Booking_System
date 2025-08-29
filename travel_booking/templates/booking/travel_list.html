@@ -1,59 +1,108 @@
 {% extends 'base.html' %}
 {% block title %}Travel Options{% endblock %}
 {% block content %}
-<h2>Find Travel Options</h2>
-<form method="get" class="row g-3 align-items-end mb-4">
-  <div class="col-md-2">
-    <label class="form-label" for="id_type">{{ form.type.label }}</label>
-    {{ form.type }}
+<section class="hero rounded-4 p-4 p-lg-5 mb-5">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-6 text-white">
+      <h1 class="display-5 fw-bold mb-3">Find Your Perfect Journey</h1>
+      <p class="lead mb-0 opacity-75">Book flights, trains, and buses with ease. Compare prices and pick the best options.</p>
+    </div>
+    <div class="col-lg-6">
+      <div class="card search-card-floating border-0 shadow-lg">
+        <div class="card-body p-4">
+          <h5 class="mb-3">Search Travel Options</h5>
+          <div class="btn-group mb-3" role="group">
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'booking:travel_list_by_type' 'Bus' %}">Bus</a>
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'booking:travel_list_by_type' 'Train' %}">Train</a>
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'booking:travel_list_by_type' 'Flight' %}">Flight</a>
+          </div>
+          <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-6">
+              <label class="form-label" for="id_source">{{ form.source.label }}</label>
+              {{ form.source }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_destination">{{ form.destination.label }}</label>
+              {{ form.destination }}
+              <datalist id="destinations-list"></datalist>
+            </div>
+            <div class="col-md-6 col-lg-4">
+              <label class="form-label" for="id_type">{{ form.type.label }}</label>
+              {{ form.type }}
+            </div>
+            <div class="col-md-6 col-lg-4">
+              <label class="form-label" for="id_date">{{ form.date.label }}</label>
+              {{ form.date }}
+            </div>
+            <div class="col-lg-4 d-grid">
+              <button id="copySearchLink" class="btn btn-outline-primary" type="button"><i class="bi bi-link-45deg me-1"></i>Copy link</button>
+            </div>
+            <div class="col-12 d-grid">
+              <button class="btn btn-primary" type="submit"><i class="bi bi-search me-1"></i>Search</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="col-md-3">
-    <label class="form-label" for="id_source">{{ form.source.label }}</label>
-    {{ form.source }}
-  </div>
-  <div class="col-md-3">
-    <label class="form-label" for="id_destination">{{ form.destination.label }}</label>
-    {{ form.destination }}
-  </div>
-  <div class="col-md-2">
-    <label class="form-label" for="id_date">{{ form.date.label }}</label>
-    {{ form.date }}
-  </div>
-  <div class="col-md-2">
-    <button class="btn btn-primary w-100" type="submit">Search</button>
-  </div>
-</form>
+</section>
 
-<div class="table-responsive">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Type</th><th>From</th><th>To</th><th>Date</th><th>Time</th><th>Price</th><th>Seats</th><th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for t in travel_options %}
-      <tr>
-        <td>{{ t.type }}</td>
-        <td>{{ t.source }}</td>
-        <td>{{ t.destination }}</td>
-        <td>{{ t.departure_date }}</td>
-        <td>{{ t.departure_time }}</td>
-        <td>${{ t.price }}</td>
-        <td>{{ t.available_seats }}</td>
-        <td>
-          {% if user.is_authenticated and t.available_seats > 0 %}
-            <a class="btn btn-sm btn-success" href="{% url 'booking:create_booking' t.id %}">Book</a>
-          {% else %}
-            <button class="btn btn-sm btn-secondary" disabled>Book</button>
-          {% endif %}
-        </td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="8" class="text-center">No matching options.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+{% if popular_routes %}
+<section class="mb-4">
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <h5 class="mb-0">Popular routes today</h5>
+    <small class="text-muted">based on recent bookings</small>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    {% for p in popular_routes %}
+      <span class="badge rounded-pill text-bg-light border">
+        <i class="bi bi-fire text-danger me-1"></i>{{ p.source }} → {{ p.destination }}
+        <span class="text-muted">({{ p.count }})</span>
+      </span>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<div class="row g-4">
+  {% for t in travel_options %}
+  <div class="col-sm-6 col-lg-4">
+    <div class="card offer-card h-100 shadow-soft">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-2">
+          <div class="transport-icon rounded-circle d-inline-flex align-items-center justify-content-center me-2">
+            {% if t.type == 'Flight' %}<i class="bi bi-airplane"></i>{% endif %}
+            {% if t.type == 'Train' %}<i class="bi bi-train-front"></i>{% endif %}
+            {% if t.type == 'Bus' %}<i class="bi bi-bus-front"></i>{% endif %}
+          </div>
+          <h5 class="mb-0">{{ t.source }} → {{ t.destination }}</h5>
+        </div>
+        <div class="text-muted small mb-3">{{ t.type }} • {{ t.departure_date }} at {{ t.departure_time }}</div>
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            {% if t.available_seats > 0 %}
+              <span class="badge text-bg-success">{{ t.available_seats }} seats</span>
+            {% else %}
+              <span class="badge text-bg-secondary">Sold out</span>
+            {% endif %}
+          </div>
+          <div class="fs-5 fw-bold">${{ t.price }}</div>
+        </div>
+      </div>
+      <div class="card-footer bg-transparent border-0 pt-0 pb-4 px-4">
+        {% if user.is_authenticated and t.available_seats > 0 %}
+          <a class="btn btn-success w-100" href="{% url 'booking:create_booking' t.id %}"><i class="bi bi-ticket-perforated me-1"></i>Book</a>
+        {% else %}
+          <button class="btn btn-secondary w-100" disabled>Book</button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="text-center text-muted py-5">No matching options.</div>
+  </div>
+  {% endfor %}
 </div>
 {% endblock %}
 
